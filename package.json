@@ -1,0 +1,22 @@
+{
+  "name": "webhook-manager",
+  "version": "1.0.0",
+  "description": "GitHub webhook manager for continuous deployment",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ThomasvanBommel/webhook-manager.git"
+  },
+  "author": "Thomas vanBommel",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ThomasvanBommel/webhook-manager/issues"
+  },
+  "homepage": "https://github.com/ThomasvanBommel/webhook-manager#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
