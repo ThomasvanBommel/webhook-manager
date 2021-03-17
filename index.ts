@@ -4,9 +4,10 @@ const app = express();
 const secret = "12345abcde";
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.all("*", (req, res) => {
-    res.set("Content-Type", "application/json");
+    // res.set("Content-Type", "application/json");
     res.set("X-Powered-By", "Sagittarius A*");
 
     if(req.url === "/favicon.ico") return;
