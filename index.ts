@@ -12,18 +12,13 @@ app.all("*", (req, res) => {
     console.log("ID: ", req.ip);
     console.log("URL: ", req.url, req.params);
 
-    try{
-        const accept: Object = JSON.parse(req.headers.accept ?? "{}");
-        const event = accept["x-github-event" as keyof Object] ?? "";
+    if("x-github-event" in req.headers)
+        console.log("EVENT: ", req.headers["x-github-event"]);
 
-        console.log("EVENT: ", event);
-        console.log("Headers: ", req.headers);
-        console.log("Some JSON: ",  req.body);
+    console.log("Headers: ", req.headers);
+    console.log("Some JSON: ",  req.body);
 
-        res.send("Thanks!");
-    }catch{
-        res.status(500).send("Error");
-    }
+    res.send("Thanks!");
 });
 
 app.listen(8080, () => 
