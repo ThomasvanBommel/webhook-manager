@@ -3,7 +3,9 @@ import * as github from "./github";
 import express from "express";
 
 const app = express();
-const acceptedRepositories = [ 333275051 ];
+const acceptedRepositories = [ 
+    /* PortfolioTS */ 333275051
+];
 
 // Use request body parsing middleware
 app.use(express.json());
@@ -24,35 +26,31 @@ app.all("*", (req, res) => {
     if(req.url === "/favicon.ico") return;
 
     // Log request data
-    console.log("----------------------")
+    console.log("----------------------");
+    console.log(new Date().toISOString());
     console.log("ID: ", req.ip);
     console.log("URL: ", req.url);
 
+    // Check that the request came from github
     if(req.github && req.github.isVerified){
-        console.log("Header Inspection:");
-        console.log("\tVerified: ", req.github.isVerified);
-        console.log("\tEvent: ", req.github.event);
-        console.log("\tTarget Type: ", req.github.targetType);
-        console.log("\tTarget ID: ", req.github.targetID);
-        // console.log("Headers: ", req.headers);
 
-        // console.log("Body: ", req.body);
+        // Log github header properties
+        console.log(req.github);
 
+        // Clone repository if check_suite event is successful
         if(req.github.event === "check_suite" && req.github.targetType === "repository"){
+
+            // Ensure the target repository is one of the accepted ids
             if(req.github.targetID ?? 0 in acceptedRepositories){
                 github.cloneRepository(req);
             }
         }
-        // github.cloneIfCheckSuiteConclusionSuccess({
-        //     isVerified: true,
-        //     event: "check_suite",
-        //     targetType: "repository",
-        //     targetID: 333275051
-        // }, req, "");
 
+        // Thank github for doing a good job!
         return res.send("👍 Thanks!");
     }
 
+    // Request is not what we're looking for
     res.send("⛔ No thanks!");
 });
 

@@ -71,12 +71,20 @@ function verifyRequest({ headers, body }: { headers: http.IncomingHttpHeaders, b
 export function cloneRepository(req: Request){
     const repository = req.body["repository"];
 
+    // Ensure repository object exists and has 'ssh_url'
     if(repository && "ssh_url" in repository){
-        const dir = (repository.ssh_url as string).replace("git@github.com:", "");
-        const folder = `${__dirname}/../repositories/${dir.substr(0, dir.length - 4)}/${Date.now()}`;
 
-        exec(`mkdir -p ${folder} && cd ${folder} && git clone ${repository.ssh_url}`, () => {
-            console.log("Cloned new repository:", folder.replace(`${__dirname}/.`, ""));
+        // Get username + project name from 'ssh_url'
+        const temp = (repository.ssh_url as string).replace("git@github.com:", "");
+
+        // Make relative and absolute paths
+        const relative = `../repositories/${temp.substr(0, temp.length - 4)}/${Date.now()}`;
+        const absolute = `${__dirname}/${relative}`;
+
+        // Create folder structure + clone repository
+        exec(`mkdir -p ${absolute} && cd ${absolute} && git clone ${repository.ssh_url}`, () => {
+            console.log("----------------------");
+            console.log("Cloned new repository:", relative);
         });
     }   
 }
