@@ -1,11 +1,13 @@
 import { networkInterfaces } from "os";
 import * as github from "./github";
-import express from "express";
+import express, { Request } from "express";
 
 const app = express();
-const acceptedRepositories = [ 
-    /* PortfolioTS */ 333275051
-];
+
+type RepoObject = { [key: number]: { name: string, branch: string[] } };
+const acceptedRepositories: RepoObject = {
+    333275051: { name: "PortfolioTS", branch: [ "master" ] }
+};
 
 // Use request body parsing middleware
 app.use(express.json());
@@ -31,28 +33,39 @@ app.all("*", (req, res) => {
     console.log("ID: ", req.ip);
     console.log("URL: ", req.url);
 
-    // Check that the request came from github
-    if(req.github && req.github.isVerified){
+    // Check if request should start a new repository clone
+    const url = getVerifiedURL(req);
 
-        // Log github header properties
-        console.log(req.github);
+    if(url){
+        // Clone repository
+        github.cloneRepository(url);
 
-        // Clone repository if check_suite event is successful
-        if(req.github.event === "check_suite" && req.github.targetType === "repository"){
-
-            // Ensure the target repository is one of the accepted ids
-            if(req.github.targetID ?? 0 in acceptedRepositories){
-                github.cloneRepository(req);
-            }
-        }
-
-        // Thank github for doing a good job!
+        // Thank github for such a great job!
         return res.send("👍 Thanks!");
     }
 
     // Request is not what we're looking for
     res.send("⛔ No thanks!");
 });
+
+/** Check for all prerequisits before returning the repositories clone url (ssh_url) */
+function getVerifiedURL(req: Request){
+    const { ssh_url, id } = req.body.repository;
+    const { head_branch } = req.body.check_suite;
+
+    try{
+        if( req.github?.isVerified &&
+            req.github?.event === "check_suite" &&
+            req.github?.targetType === "repository" &&
+            (req.github?.targetID ?? 0) in acceptedRepositories &&
+            id && head_branch &&
+            acceptedRepositories[id].branch.includes(head_branch))
+            return String(ssh_url);
+
+    }catch(error){ console.log(error) }
+
+    return "";
+}
 
 // Start listening on all interfaces
 app.listen(8080, () => {
