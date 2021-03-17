@@ -20,7 +20,12 @@ app.all("*", (req, res) => {
         console.log("EVENT: ", req.headers["x-github-event"]);
 
     console.log("Headers: ", req.headers);
-    console.log("Some JSON: ", req.body);
+
+    if(req.body.payload){
+        console.log("Payload: ", JSON.parse(req.body.payload));
+    }else{
+        console.log("Some JSON: ", req.body);
+    }
 
     res.send("Thanks!");
 });
