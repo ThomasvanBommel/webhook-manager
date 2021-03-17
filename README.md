@@ -6,6 +6,7 @@ It will ignore invalid requests from unknown sources
 
 Dependencies:
  - [Express](https://www.npmjs.com/package/express)
+ - [typescript](https://www.npmjs.com/package/typescript)
 
 ## Requirements
 
@@ -15,8 +16,9 @@ Dependencies:
 
 ### Run
 
- 1. Install packages `npm i`
- 2. Build & run `npm start`
+ 1. Install typescript globally `npm i -g typescript`
+ 2. Install packages `npm i`
+ 3. Build & run `npm start`
 
 ### Example Output
 

@@ -50,10 +50,10 @@ app.all("*", (req, res) => {
 
 /** Check for all prerequisits before returning the repositories clone url (ssh_url) */
 function getVerifiedURL(req: Request){
-    const { ssh_url, id } = req.body.repository;
-    const { head_branch } = req.body.check_suite;
-
     try{
+        const { ssh_url, id } = req.body.repository;
+        const { head_branch } = req.body.check_suite;
+
         if( req.github?.isVerified &&
             req.github?.event === "check_suite" &&
             req.github?.targetType === "repository" &&
@@ -62,7 +62,7 @@ function getVerifiedURL(req: Request){
             acceptedRepositories[id].branch.includes(head_branch))
             return String(ssh_url);
 
-    }catch(error){ console.log(error) }
+    }catch(error){ }
 
     return "";
 }
