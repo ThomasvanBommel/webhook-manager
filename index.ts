@@ -9,12 +9,21 @@ app.all("*", (req, res) => {
     if(req.url === "/favicon.ico") return;
 
     console.log("----------------------")
-    console.log("ID: ", req.ip, req.hostname);
+    console.log("ID: ", req.ip);
     console.log("URL: ", req.url, req.params);
-    console.log("Headers: ", req.headers);
-    console.log("Some JSON: ",  req.body);
 
-    res.send("Welcome!");
+    try{
+        const accept: Object = JSON.parse(req.headers.accept ?? "{}");
+        const event = accept["x-github-event" as keyof Object] ?? "";
+
+        console.log("EVENT: ", event);
+        console.log("Headers: ", req.headers);
+        console.log("Some JSON: ",  req.body);
+
+        res.send("Thanks!");
+    }catch{
+        res.status(500).send("Error");
+    }
 });
 
 app.listen(8080, () => 
