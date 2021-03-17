@@ -1,15 +1,39 @@
 import express from "express";
+import crypto from "crypto";
+import http from "http";
 
 const app = express();
-const secret = "12345abcde";
+const repoID = "333275051";
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.all("*", (req, res) => {
-    // res.set("Content-Type", "application/json");
+// Set headers using middleware
+app.use((req, res, next) => {
     res.set("X-Powered-By", "Sagittarius A*");
+    next();
+});
 
+function verifyRequest({ headers, body }: { headers: http.IncomingHttpHeaders, body: unknown }) {
+    try{
+        // Create sha256 HMAC using our 'key', stored in WEBHOOK_SECRET environment variable
+        const hmac = crypto.createHmac("sha256", process.env["WEBHOOK_SECRET"] as string);
+
+        // Add payload (requet body) to HMAC
+        hmac.update(JSON.stringify(body), "utf-8");
+
+        // Compare result with headers signature
+        return "sha256=" + hmac.digest("hex") === headers["x-hub-signature-256"];
+
+    // Log any errors
+    }catch(error){
+        console.error("Verification failure: " + error);
+    }
+
+    return false;
+}
+
+app.all("*", (req, res) => {
     if(req.url === "/favicon.ico") return;
 
     console.log("----------------------")
@@ -20,12 +44,7 @@ app.all("*", (req, res) => {
         console.log("EVENT: ", req.headers["x-github-event"]);
 
     console.log("Headers: ", req.headers);
-
-    if(req.body.payload){
-        console.log("Payload: ", JSON.parse(req.body.payload));
-    }else{
-        console.log("Some JSON: ", req.body);
-    }
+    console.log("Verified: ", verifyRequest(req));
 
     res.send("Thanks!");
 });
