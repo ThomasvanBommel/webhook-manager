@@ -3,6 +3,7 @@ import * as github from "./github";
 import express from "express";
 
 const app = express();
+const acceptedRepositories = [ 333275051 ];
 
 // Use request body parsing middleware
 app.use(express.json());
@@ -28,11 +29,26 @@ app.all("*", (req, res) => {
     console.log("URL: ", req.url);
 
     if(req.github && req.github.isVerified){
-        console.log("Verified: ", req.github.isVerified);
-        console.log("Event: ", req.github.event);
-        console.log("Target Type: ", req.github.targetType);
-        console.log("Target ID: ", req.github.targetID);
+        console.log("Header Inspection:");
+        console.log("\tVerified: ", req.github.isVerified);
+        console.log("\tEvent: ", req.github.event);
+        console.log("\tTarget Type: ", req.github.targetType);
+        console.log("\tTarget ID: ", req.github.targetID);
         // console.log("Headers: ", req.headers);
+
+        // console.log("Body: ", req.body);
+
+        if(req.github.event === "check_suite" && req.github.targetType === "repository"){
+            if(req.github.targetID ?? 0 in acceptedRepositories){
+                github.cloneRepository(req);
+            }
+        }
+        // github.cloneIfCheckSuiteConclusionSuccess({
+        //     isVerified: true,
+        //     event: "check_suite",
+        //     targetType: "repository",
+        //     targetID: 333275051
+        // }, req, "");
 
         return res.send("👍 Thanks!");
     }

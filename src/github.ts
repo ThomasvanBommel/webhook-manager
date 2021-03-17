@@ -1,8 +1,7 @@
 import { Request, Response, NextFunction } from "express";
+import { exec } from "child_process";
 import crypto from "crypto";
 import http from "http";
-
-const repoID = "333275051";
 
 type GitHub = {
     isVerified?: boolean,
@@ -63,4 +62,21 @@ function verifyRequest({ headers, body }: { headers: http.IncomingHttpHeaders, b
     }
 
     return false;
+}
+
+/** 
+ * Clone a repository into the 'repositories' folder
+ * IF the request body contains repository.ssh_url 
+ */
+export function cloneRepository(req: Request){
+    const repository = req.body["repository"];
+
+    if(repository && "ssh_url" in repository){
+        const dir = (repository.ssh_url as string).replace("git@github.com:", "");
+        const folder = `${__dirname}/../repositories/${dir.substr(0, dir.length - 4)}/${Date.now()}`;
+
+        exec(`mkdir -p ${folder} && cd ${folder} && git clone ${repository.ssh_url}`, () => {
+            console.log("Cloned new repository:", folder.replace(`${__dirname}/.`, ""));
+        });
+    }   
 }
