@@ -6,6 +6,9 @@ const secret = "12345abcde";
 app.use(express.json());
 
 app.all("*", (req, res) => {
+    res.set("Content-Type", "application/json");
+    res.set("X-Powered-By", "Sagittarius A*");
+
     if(req.url === "/favicon.ico") return;
 
     console.log("----------------------")
@@ -16,7 +19,7 @@ app.all("*", (req, res) => {
         console.log("EVENT: ", req.headers["x-github-event"]);
 
     console.log("Headers: ", req.headers);
-    console.log("Some JSON: ",  JSON.stringify(req.body));
+    console.log("Some JSON: ", req.body);
 
     res.send("Thanks!");
 });
