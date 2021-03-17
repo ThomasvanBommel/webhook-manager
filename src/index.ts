@@ -1,21 +1,21 @@
-import { signatureVerification } from "./github";
 import { networkInterfaces } from "os";
+import * as github from "./github";
 import express from "express";
 
 const app = express();
 
-// Add body parsing middleware
+// Use request body parsing middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Use GitHub header inspection middleware
+app.use(github.headerInspection);
 
 // Set headers using middleware
 app.use((req, res, next) => {
     res.set("X-Powered-By", "Sagittarius A*");
     next();
 });
-
-// Add GitHub signature verification middleware
-app.use(signatureVerification);
 
 // Response to all endpoints
 app.all("*", (req, res) => {
@@ -25,15 +25,19 @@ app.all("*", (req, res) => {
     // Log request data
     console.log("----------------------")
     console.log("ID: ", req.ip);
-    console.log("URL: ", req.url, req.params);
+    console.log("URL: ", req.url);
 
-    if("x-github-event" in req.headers)
-        console.log("EVENT: ", req.headers["x-github-event"]);
+    if(req.github && req.github.isVerified){
+        console.log("Verified: ", req.github.isVerified);
+        console.log("Event: ", req.github.event);
+        console.log("Target Type: ", req.github.targetType);
+        console.log("Target ID: ", req.github.targetID);
+        // console.log("Headers: ", req.headers);
 
-    console.log("Headers: ", req.headers);
-    console.log("Verified: ", req.isVerified ?? false);
+        return res.send("👍 Thanks!");
+    }
 
-    res.send("Thanks!");
+    res.send("⛔ No thanks!");
 });
 
 // Start listening on all interfaces

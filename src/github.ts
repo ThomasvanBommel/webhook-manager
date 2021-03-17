@@ -4,20 +4,46 @@ import http from "http";
 
 const repoID = "333275051";
 
+type GitHub = {
+    isVerified?: boolean,
+    event?: string | string[],
+    targetType?: string | string[],
+    targetID?: number
+};
+
 // Add properties to express objects
 declare global {
     namespace Express {
         export interface Request {
-            isVerified?: boolean
+            github?: GitHub
         }
     }
 }
 
-/** Signature verification middleware (sets req.isVerified) */
-export function signatureVerification(req: Request, res: Response, next: NextFunction) {
-    req.isVerified = verifyRequest(req);
+/** Parse request header and add GitHub object to request object */
+export function headerInspection(req: Request, res: Response, next: NextFunction) {
+    const github: GitHub = {
+        isVerified: false,
+        event: undefined,
+        targetType: undefined,
+        targetID: undefined
+    };
+
+    github.isVerified = verifyRequest(req);
+
+    if("x-github-event" in req.headers)
+        github.event = req.headers["x-github-event"];
+
+    if("x-github-hook-installation-target-type" in req.headers)
+        github.targetType = req.headers["x-github-hook-installation-target-type"];
+
+    if("x-github-hook-installation-target-id" in req.headers)
+        github.targetID = Number(req.headers["x-github-hook-installation-target-id"]);
+
+    req.github = github;
+
     next();
-};
+}
 
 /** Verify request signatures using environment variable WEBHOOK_SECRET */
 function verifyRequest({ headers, body }: { headers: http.IncomingHttpHeaders, body: unknown }) {
