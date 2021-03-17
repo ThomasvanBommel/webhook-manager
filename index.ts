@@ -1,12 +1,13 @@
 import express from "express";
 
 const app = express();
+const secret = "12345abcde";
 
 app.use(express.json());
 
 app.all("*", (req, res) => {
     if(req.url === "/favicon.ico") return;
-    
+
     console.log("----------------------")
     console.log("ID: ", req.ip, req.hostname);
     console.log("URL: ", req.url, req.params);
